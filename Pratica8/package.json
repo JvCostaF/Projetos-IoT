@@ -7,9 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "iot"
+    "iot",
+    "nodeMCU",
+    "BPM280"
   ],
-  "author": "Joao Victo da Costa Farias",
+  "author": "Joao Victor da Costa Farias",
   "license": "MIT",
   "dependencies": {
     "johnny-five": "^2.1.0"
