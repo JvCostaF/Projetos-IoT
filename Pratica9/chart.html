@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gráfico de Temperatura e Pressão</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h3>Gráfico de Temperatura</h3>
+    <canvas id="temperatureChart" width="400" height="200"></canvas>
+    <h3>Gráfico de Pressão</h3>
+    <canvas id="pressureChart" width="400" height="200"></canvas>
+    
+    <script>
+        // Configuração do gráfico de temperatura
+        const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+        const temperatureChart = new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Temperatura (°C)',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Horário' },
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Temperatura (°C)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Configuração do gráfico de pressão
+        const pressureCtx = document.getElementById('pressureChart').getContext('2d');
+        const pressureChart = new Chart(pressureCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Pressão (hPa)',
+                    data: [],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Horário' },
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        min: 800,
+                        max: 1200,
+                        title: {
+                            display: true,
+                            text: 'Pressão (hPa)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Conectar ao servidor Socket.IO
+        const socket = io('http://localhost:3000');
+
+        let x = 0;
+
+        // Receber mensagens MQTT via Socket.IO
+        socket.on('mqttMessage', function (data) {
+            const parsedData = JSON.parse(data);
+            const temp = parsedData.temperature;
+            const pressure = parsedData.pressure;
+
+            const now = new Date().toLocaleTimeString();
+
+            // Adiciona dados e rótulos para o gráfico de temperatura
+            temperatureChart.data.labels.push(now);
+            temperatureChart.data.datasets[0].data.push({ "x": x, "y": temp });
+
+            // Adiciona dados e rótulos para o gráfico de pressão
+            pressureChart.data.labels.push(now);
+            pressureChart.data.datasets[0].data.push({ "x": x, "y": pressure });
+
+            x += 1;
+
+            // Limite para 10 ciclos, remover o mais antigo
+            if (x > 10) {
+                temperatureChart.data.labels.shift();
+                temperatureChart.data.datasets[0].data.shift();
+
+                pressureChart.data.labels.shift();
+                pressureChart.data.datasets[0].data.shift();
+            }
+
+            temperatureChart.update();
+            pressureChart.update();
+        });
+    </script>
+</body>
+</html>
