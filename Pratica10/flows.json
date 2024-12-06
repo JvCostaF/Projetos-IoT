@@ -1,0 +1,614 @@
+[
+    {
+        "id": "9e084fd694817dc7",
+        "type": "tab",
+        "label": "Fluxo 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "81bba702659a0ed7",
+        "type": "mqtt in",
+        "z": "9e084fd694817dc7",
+        "name": "",
+        "topic": "ufrj/projeto-iot-2024/grupo-d/dht-light",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "714df4c8121d7909",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 780,
+        "y": 120,
+        "wires": [
+            [
+                "1b97cf549493b181"
+            ]
+        ]
+    },
+    {
+        "id": "f4a6e8aa62672b40",
+        "type": "aedes broker",
+        "z": "9e084fd694817dc7",
+        "name": "node-broker",
+        "mqtt_port": 1883,
+        "mqtt_ws_bind": "port",
+        "mqtt_ws_port": "",
+        "mqtt_ws_path": "",
+        "cert": "",
+        "key": "",
+        "certname": "",
+        "keyname": "",
+        "persistence_bind": "memory",
+        "dburl": "",
+        "usetls": false,
+        "x": 850,
+        "y": 160,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "fe16846ec9f14b92",
+        "type": "function",
+        "z": "9e084fd694817dc7",
+        "name": "CtoF",
+        "func": "\nvar payload = msg.payload\n\nvar tempC = payload[\"tempC\"]\n\nvar tempF = tempC * 9/5 + 32\n\npayload[\"tempF\"] = tempF\n\nmsg.payload = payload\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 180,
+        "wires": [
+            [
+                "2bbb5246ea9f85c5"
+            ]
+        ]
+    },
+    {
+        "id": "2bbb5246ea9f85c5",
+        "type": "function",
+        "z": "9e084fd694817dc7",
+        "name": "PercentToKgM",
+        "func": "\nvar payload = msg.payload\n\nvar tempC = payload[\"tempC\"]\nvar relHumidity = payload[\"relHumidity\"]\n\nvar saturationP = 6.112 * Math.exp((17.67*tempC)/(tempC+243.5))\nsaturationP *= 1000\n\nvar absHumidity = (relHumidity * saturationP) / (461 * tempC)  \n\npayload[\"humidityKgM\"] = absHumidity\n\nmsg.payload = payload\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 240,
+        "wires": [
+            [
+                "effc5351cbd43c69"
+            ]
+        ]
+    },
+    {
+        "id": "effc5351cbd43c69",
+        "type": "function",
+        "z": "9e084fd694817dc7",
+        "name": "KgMToLbFt",
+        "func": "\nvar payload = msg.payload;\n\nvar humidityKg = payload[\"humidityKgM\"]\n\nvar humidityLb = 0.062428 * humidityKg\n\npayload[\"humidityLbFt\"] = humidityLb\npayload[\"tempSelection\"] = 0\npayload[\"humiditySelection\"] = 0\n\nmsg.payload = payload\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 300,
+        "wires": [
+            [
+                "2d5031daa872f77d",
+                "c0297e52aec317d5",
+                "7a34865b944b4b5a"
+            ]
+        ]
+    },
+    {
+        "id": "1b97cf549493b181",
+        "type": "function",
+        "z": "9e084fd694817dc7",
+        "name": "startPayload",
+        "func": "\nvar payload = msg.payload\n\nvar relHumidity = payload[\"humidity\"]\n\nvar tempC = payload[\"temperature\"]\n\nvar pr1 = payload[\"light\"]\n\nvar newPayload = {\n    \"light1\": pr1,\n    \"tempC\": tempC,\n    \"relHumidity\": relHumidity\n}\n\nmsg.payload = newPayload\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 120,
+        "wires": [
+            [
+                "fe16846ec9f14b92"
+            ]
+        ]
+    },
+    {
+        "id": "2d5031daa872f77d",
+        "type": "debug",
+        "z": "9e084fd694817dc7",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "9bb016f767c0ee16",
+        "type": "ui_chart",
+        "z": "9e084fd694817dc7",
+        "name": "",
+        "group": "9bffa7ac23369a9a",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Temperature",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "10",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1530,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "32352e7fac3e2666",
+        "type": "ui_chart",
+        "z": "9e084fd694817dc7",
+        "name": "",
+        "group": "628951e4ec5e7473",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Humidity",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "10",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1480,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "39994f034e7fd63a",
+        "type": "ui_dropdown",
+        "z": "9e084fd694817dc7",
+        "name": "tempDropdown",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "9bffa7ac23369a9a",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Celsius",
+                "value": "C",
+                "type": "str"
+            },
+            {
+                "label": "Fahrenheit",
+                "value": "F",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "tempUnit",
+        "topicType": "str",
+        "className": "",
+        "x": 1060,
+        "y": 440,
+        "wires": [
+            [
+                "c0297e52aec317d5"
+            ]
+        ]
+    },
+    {
+        "id": "33a60e9180521c43",
+        "type": "debug",
+        "z": "9e084fd694817dc7",
+        "name": "debug 2",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1560,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "ce5d5209bc39c398",
+        "type": "mqtt out",
+        "z": "9e084fd694817dc7",
+        "name": "",
+        "topic": "ufrj/projeto-iot-2024/grupo-d/motor",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "714df4c8121d7909",
+        "x": 1640,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "61e8a946d5ee5313",
+        "type": "ui_slider",
+        "z": "9e084fd694817dc7",
+        "name": "",
+        "label": "slider",
+        "tooltip": "",
+        "group": "55c03f73147fb95f",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "topic",
+        "topicType": "msg",
+        "min": 0,
+        "max": "400",
+        "step": "10",
+        "className": "",
+        "x": 1190,
+        "y": 520,
+        "wires": [
+            [
+                "ce5d5209bc39c398",
+                "0c71955801c49217"
+            ]
+        ]
+    },
+    {
+        "id": "0c71955801c49217",
+        "type": "debug",
+        "z": "9e084fd694817dc7",
+        "name": "debug 3",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1480,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "c0297e52aec317d5",
+        "type": "function",
+        "z": "9e084fd694817dc7",
+        "name": "ChooseTemperature",
+        "func": "if (msg.topic == \"tempUnit\") {\n    context.set(\"currentTempUnit\", msg.payload)\n    return null;\n}\n\nvar currentTempUnit = context.get(\"currentTempUnit\")\n\nif (currentTempUnit === \"C\") {\n    msg.payload = msg.payload[\"tempC\"]\n    return msg;\n}\n\nmsg.payload = msg.payload[\"tempF\"]\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "//O código adicionado aqui será executado uma vez\n// sempre que o nó for iniciado.\n\nlet currentTempUnit = \"C\"\n\ncontext.set(\"currentTempUnit\", currentTempUnit);",
+        "finalize": "",
+        "libs": [],
+        "x": 1300,
+        "y": 380,
+        "wires": [
+            [
+                "33a60e9180521c43",
+                "9bb016f767c0ee16"
+            ]
+        ]
+    },
+    {
+        "id": "a511045a9be07eb0",
+        "type": "ui_dropdown",
+        "z": "9e084fd694817dc7",
+        "name": "",
+        "label": "humidityDropdown",
+        "tooltip": "",
+        "place": "",
+        "group": "628951e4ec5e7473",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "%",
+                "value": "%",
+                "type": "str"
+            },
+            {
+                "label": "kg/m^3",
+                "value": "KgM",
+                "type": "str"
+            },
+            {
+                "label": "lb/ft^3",
+                "value": "LbFt",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "humUnit",
+        "topicType": "str",
+        "className": "",
+        "x": 1190,
+        "y": 60,
+        "wires": [
+            [
+                "7a34865b944b4b5a"
+            ]
+        ]
+    },
+    {
+        "id": "7a34865b944b4b5a",
+        "type": "function",
+        "z": "9e084fd694817dc7",
+        "name": "ChooseHumidity",
+        "func": "\nif (msg.topic == \"humUnit\") {\n    context.set(\"currentHumUnit\", msg.payload)\n    return null;\n}\n\nvar currentHumUnit = context.get(\"currentHumUnit\")\n\nif (currentHumUnit === \"%\") {\n    msg.payload = msg.payload[\"relHumidity\"]\n    return msg;\n}\n\nif (currentHumUnit === \"KgM\") {\n    msg.payload = msg.payload[\"humidityKgM\"]\n    return msg;\n}\n\nmsg.payload = msg.payload[\"humidityLbFt\"]\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "//O código adicionado aqui será executado uma vez\n// sempre que o nó for iniciado.\n\nlet currentHumUnit = \"%\"\n\ncontext.set(\"currentHumUnit\", currentHumUnit);",
+        "finalize": "",
+        "libs": [],
+        "x": 1320,
+        "y": 300,
+        "wires": [
+            [
+                "32352e7fac3e2666",
+                "33a60e9180521c43"
+            ]
+        ]
+    },
+    {
+        "id": "7f7037138bb4a4ec",
+        "type": "telegram receiver",
+        "z": "9e084fd694817dc7",
+        "name": "",
+        "bot": "664b239a93298344",
+        "saveDataDir": "",
+        "filterCommands": false,
+        "x": 1150,
+        "y": 600,
+        "wires": [
+            [
+                "9d1c4f29ef8b6601",
+                "d53a186340c4b8d3"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "9d1c4f29ef8b6601",
+        "type": "debug",
+        "z": "9e084fd694817dc7",
+        "name": "debug 4",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1540,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "d53a186340c4b8d3",
+        "type": "function",
+        "z": "9e084fd694817dc7",
+        "name": "function 1",
+        "func": "var message = msg.payload\n\nif (message[\"type\"] != \"message\") {\n    return null;\n}\n\nvar value = parseInt(message[\"content\"])\n\nif (isNaN(value)) {\n    return null\n}\n\nif (value > 400 || value < 0) {\n    return null\n}\n\nmsg.payload = value\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1360,
+        "y": 580,
+        "wires": [
+            [
+                "ce5d5209bc39c398",
+                "9d1c4f29ef8b6601"
+            ]
+        ]
+    },
+    {
+        "id": "714df4c8121d7909",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "9bffa7ac23369a9a",
+        "type": "ui_group",
+        "name": "TemperatureGraph",
+        "tab": "61ea8639384a38dc",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "628951e4ec5e7473",
+        "type": "ui_group",
+        "name": "HumidityGraph",
+        "tab": "b3937a9a30dd1192",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "55c03f73147fb95f",
+        "type": "ui_group",
+        "name": "Motor",
+        "tab": "0ca2a086fc794d97",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "664b239a93298344",
+        "type": "telegram bot",
+        "botname": "wakaridev_bot",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "testenvironment": false,
+        "updatemode": "polling",
+        "addressfamily": "",
+        "pollinterval": "300",
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": "6667",
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": "8443",
+        "publicbotport": "8443",
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "61ea8639384a38dc",
+        "type": "ui_tab",
+        "name": "Temperature",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "b3937a9a30dd1192",
+        "type": "ui_tab",
+        "name": "Humidity",
+        "icon": "Humidity",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "0ca2a086fc794d97",
+        "type": "ui_tab",
+        "name": "Motor",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
